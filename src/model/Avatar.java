@@ -1,92 +1,82 @@
 package model;
 
-import control.MainWindow;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 
-public class Avatar {
-    private GraphicsContext gc;
-    private Canvas canvas;
-    private int x = 250;
-    private int y = 250;
-    private int width;
-    private int height;
-    private int centerX;
-    private int centerY;
+public class Avatar extends HitBox{
     private Image image;
+    private boolean moveRight;
+    private boolean moveLeft;
+    private boolean moveUp;
+    private boolean moveDown;
+    private int speed;
 
-    public Avatar(Canvas canvas, int width, int height) {
-        this.canvas=canvas;
-        gc = canvas.getGraphicsContext2D();
-        this.width = width;
-        this.height = height;
-        centerX = (width / 2) + x;
-        centerY = (height / 2) + y;
+    public Avatar(Canvas canvas, int x, int y, int width, int height) {
+        super(canvas, x, y, width, height);
+        moveRight = false;
+        moveLeft = false;
+        moveUp = false;
+        moveDown = false;
+        speed = 5;
         image = new Image("images/space_ship.png", width, height, true, true);
     }
 
+    /**
+     * Paints the avatar depending on movement booleans
+     */
     public void paint(){
-        gc.drawImage(image, x, y);
-//        if (MainWindow.FRAMES % 1000 == 0) {
-//            x = 50;
-//            y = 50;
-//        }
+        if (moveDown && !moveUp) {
+            moveY(speed);
+        } else if(!moveDown && moveUp){
+            moveY(-speed);
+        }
+
+        if (moveRight && !moveLeft) {
+            moveX(speed);
+        } else if(!moveRight && moveLeft){
+            moveX(-speed);
+        }
+
+        getGc().drawImage(image, getX(), getY());
     }
 
     public void moveX(int i) {
-        x+=i;
+        setX(getX() + i);
     }
 
     public void moveY(int i) {
-        y+=i;
+        setY(getY() + i);
     }
 
-    public int getX() {
-        return x;
+    public boolean isMoveRight() {
+        return moveRight;
     }
 
-    public void setX(int x) {
-        this.x = x;
+    public void setMoveRight(boolean moveRight) {
+        this.moveRight = moveRight;
     }
 
-    public int getY() {
-        return y;
+    public boolean isMoveLeft() {
+        return moveLeft;
     }
 
-    public void setY(int y) {
-        this.y = y;
+    public void setMoveLeft(boolean moveLeft) {
+        this.moveLeft = moveLeft;
     }
 
-    public int getWidth() {
-        return width;
+    public boolean isMoveUp() {
+        return moveUp;
     }
 
-    public void setWidth(int width) {
-        this.width = width;
+    public void setMoveUp(boolean moveUp) {
+        this.moveUp = moveUp;
     }
 
-    public int getHeight() {
-        return height;
+    public boolean isMoveDown() {
+        return moveDown;
     }
 
-    public void setHeight(int height) {
-        this.height = height;
-    }
-
-    public int getCenterX() {
-        return centerX;
-    }
-
-    public void setCenterX(int centerX) {
-        this.centerX = centerX;
-    }
-
-    public int getCenterY() {
-        return centerY;
-    }
-
-    public void setCenterY(int centerY) {
-        this.centerY = centerY;
+    public void setMoveDown(boolean moveDown) {
+        this.moveDown = moveDown;
     }
 }

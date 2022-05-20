@@ -3,44 +3,40 @@ package control;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
-
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.input.KeyCode;
-import javafx.scene.paint.Color;
+import javafx.scene.control.Button;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import screens.BaseScreen;
-import screens.ScreenA;
-import screens.ScreenB;
+import screens.GameScreen;
+import screens.PauseScreen;
 
 public class MainWindow implements Initializable {
-	public static int FRAMES = 0;
 	public static int SCREEN = 0;
 
 	@FXML
 	private Canvas canvas;
-	private GraphicsContext gc;
-	private ScreenA screenA;
-	private ScreenB screenB;
+
+	@FXML
+	private Button pauseBTN;
+
 	private ArrayList<BaseScreen> screens;
 
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
-
+		pauseBTN.setGraphic(new ImageView(new Image("images/pause.png",40, 40, true, true)));
 		screens = new ArrayList<>();
-
-		screens.add(new ScreenA(canvas));
-		screens.add(new ScreenB(canvas));
-
-		gc = canvas.getGraphicsContext2D();
+		screens.add(new GameScreen(canvas));
+		screens.add(new PauseScreen(canvas));
 		canvas.setFocusTraversable(true);
 		
 		new Thread(() -> {
 			while (true) {
 				paint();
-				pause(5);
-				FRAMES++;
+				pause();
 			}
 		}).start();
 
@@ -49,47 +45,40 @@ public class MainWindow implements Initializable {
 	
 	private void paint() {
 		screens.get(SCREEN).paint();
-		
 	}
 
 	public void initEvents() {
-		//lambda 1
-		canvas.setOnMouseClicked(e -> {
-			screens.get(SCREEN).onClick(e);
-		});
-
-		//lambda 2
+		// lambda of key pressed
 		canvas.setOnKeyPressed(e -> {
 			screens.get(SCREEN).onKey(e);
-//			if (e.getCode().equals(KeyCode.SPACE)){
-//				System.out.println("Space");
-//				SCREEN = (SCREEN+1)%2;
-//			}
-			if (e.getCode().equals(KeyCode.UP)){
-				System.out.println("UP");
-				SCREEN = (SCREEN+1)%2;
-			}
-			if (e.getCode().equals(KeyCode.DOWN)){
-				System.out.println("DOWN");
-				SCREEN = (SCREEN+1)%2;
-			}
-			if (e.getCode().equals(KeyCode.LEFT)){
-				System.out.println("LEFT");
-				SCREEN = (SCREEN+1)%2;
-			}
-			if (e.getCode().equals(KeyCode.RIGHT)){
-				System.out.println("RIGTH");
-				SCREEN = (SCREEN+1)%2;
-			}
+		});
+
+		canvas.setOnKeyReleased(e -> {
+			screens.get(SCREEN).keyReleased(e);
 		});
 	}
 
-	private void pause(int time) {
+	private void pause() {
 		try {
-			Thread.sleep(time);
+			Thread.sleep(30);
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
 		}
 	}
-	
+
+	@FXML
+	void pause(ActionEvent event) {
+		MainWindow.SCREEN = (MainWindow.SCREEN + 1) % 2;
+		canvas.requestFocus();
+
+		BaseScreen currentScreen = screens.get(SCREEN);
+
+		if (currentScreen instanceof GameScreen) {
+			GameScreen gameScreen = (GameScreen) currentScreen;
+			gameScreen.pauseAvatar();
+			pauseBTN.setGraphic(new ImageView(new Image("images/pause.png",40, 40, true, true)));
+		} else {
+			pauseBTN.setGraphic(new ImageView(new Image("images/play.png",40, 40, true, true)));
+		}
+	}
 }
