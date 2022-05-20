@@ -27,7 +27,6 @@ public class PauseScreen extends BaseScreen{
         );
 
         gc.setFont(new Font(30));
-
     }
 
     @Override

@@ -68,17 +68,20 @@ public class MainWindow implements Initializable {
 
 	@FXML
 	void pause(ActionEvent event) {
-		MainWindow.SCREEN = (MainWindow.SCREEN + 1) % 2;
 		canvas.requestFocus();
 
 		BaseScreen currentScreen = screens.get(SCREEN);
 
 		if (currentScreen instanceof GameScreen) {
 			GameScreen gameScreen = (GameScreen) currentScreen;
-			gameScreen.pauseAvatar();
-			pauseBTN.setGraphic(new ImageView(new Image("images/pause.png",40, 40, true, true)));
-		} else {
+			gameScreen.pauseGame();
 			pauseBTN.setGraphic(new ImageView(new Image("images/play.png",40, 40, true, true)));
+		} else {
+			GameScreen gameScreen = (GameScreen) screens.get((SCREEN + 1) % 2);
+			gameScreen.resumeGame();
+			pauseBTN.setGraphic(new ImageView(new Image("images/pause.png",40, 40, true, true)));
 		}
+
+		SCREEN = (SCREEN + 1) % 2;
 	}
 }

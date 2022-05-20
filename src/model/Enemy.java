@@ -2,7 +2,6 @@ package model;
 
 import javafx.scene.canvas.Canvas;
 import javafx.scene.image.Image;
-import screens.GameScreen;
 
 public class Enemy extends HitBox implements Runnable{
     private int speedX;
@@ -52,7 +51,6 @@ public class Enemy extends HitBox implements Runnable{
 
     @Override
     public void run() {
-
         while (isAlive()) {
 
             if (moveRight) {

@@ -4,13 +4,10 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.paint.Color;
 import model.Avatar;
 import model.Enemy;
-import model.HitBox;
 import model.Bullet;
 
-import java.awt.*;
 import java.util.ArrayList;
 
 public class GameScreen extends BaseScreen{
@@ -150,10 +147,21 @@ public class GameScreen extends BaseScreen{
 		}
 	}
 
-	public void pauseAvatar() {
+	public void pauseGame() {
 		avatar.setMoveRight(false);
 		avatar.setMoveLeft(false);
 		avatar.setMoveDown(false);
 		avatar.setMoveUp(false);
+
+		for (int i = 0; i < enemies.size(); i++) {
+			enemies.get(i).setAlive(false);
+		}
+	}
+
+	public void resumeGame() {
+		for (int i = 0; i < enemies.size(); i++) {
+			enemies.get(i).setAlive(true);
+			new Thread(enemies.get(i)).start();
+		}
 	}
 }
