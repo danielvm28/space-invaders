@@ -10,11 +10,11 @@ public class Enemy extends HitBox implements Runnable{
     private boolean isAlive;
     private boolean moveRight;
 
-    public Enemy(Canvas canvas, int x, int y, int width, int height, int imgNum) {
+    public Enemy(Canvas canvas, int x, int y, int width, int height, int imgNum, int speedX) {
         super(canvas, x, y, width, height);
         isAlive = true;
         moveRight = true;
-        speedX = 2;
+        this.speedX = speedX;
         speedY = 10;
         image = new Image("images/enemy" + imgNum + ".png", width, height, true, true);
     }
@@ -62,7 +62,7 @@ public class Enemy extends HitBox implements Runnable{
             }
 
             try {
-                Thread.sleep(20);
+                Thread.sleep(15);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

@@ -7,8 +7,12 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 
-public class PauseScreen extends BaseScreen{
-    public PauseScreen(Canvas canvas) {
+public class TransitionScreen extends BaseScreen{
+    private String label;
+
+    private GameScreen gameScreen;
+
+    public TransitionScreen(Canvas canvas) {
         super(canvas);
     }
 
@@ -21,10 +25,16 @@ public class PauseScreen extends BaseScreen{
         gc.setTextAlign(TextAlignment.CENTER);
         gc.setTextBaseline(VPos.CENTER);
         gc.fillText(
-                "Game Paused",
+                label,
                 Math.round(canvas.getWidth()  / 2),
                 Math.round(canvas.getHeight() / 2)
         );
+
+        gc.setFont(new Font(30));
+
+        gc.fillText("Press the button to continue to level " + (gameScreen.LEVEL + 1),
+                Math.round(canvas.getWidth()  / 2),
+                Math.round(canvas.getHeight() / 2) + 50);
     }
 
     @Override
@@ -35,5 +45,21 @@ public class PauseScreen extends BaseScreen{
     @Override
     public void keyReleased(KeyEvent e) {
 
+    }
+
+    public GameScreen getGameScreen() {
+        return gameScreen;
+    }
+
+    public void setGameScreen(GameScreen gameScreen) {
+        this.gameScreen = gameScreen;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
     }
 }

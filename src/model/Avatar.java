@@ -2,6 +2,7 @@ package model;
 
 import javafx.scene.canvas.Canvas;
 import javafx.scene.image.Image;
+import javafx.scene.paint.Color;
 
 public class Avatar extends HitBox{
     private Image image;
@@ -9,6 +10,8 @@ public class Avatar extends HitBox{
     private boolean moveLeft;
     private boolean moveUp;
     private boolean moveDown;
+    private boolean limitedRightMovement;
+    private boolean limitedLeftMovement;
     private int speed;
 
     public Avatar(Canvas canvas, int x, int y, int width, int height) {
@@ -17,6 +20,8 @@ public class Avatar extends HitBox{
         moveLeft = false;
         moveUp = false;
         moveDown = false;
+        limitedLeftMovement = false;
+        limitedRightMovement = false;
         speed = 5;
         image = new Image("images/space_ship.png", width, height, true, true);
     }
@@ -31,9 +36,9 @@ public class Avatar extends HitBox{
             moveY(-speed);
         }
 
-        if (moveRight && !moveLeft) {
+        if (moveRight && !moveLeft && !limitedRightMovement) {
             moveX(speed);
-        } else if(!moveRight && moveLeft){
+        } else if(!moveRight && moveLeft && !limitedLeftMovement){
             moveX(-speed);
         }
 
@@ -42,10 +47,12 @@ public class Avatar extends HitBox{
 
     public void moveX(int i) {
         setX(getX() + i);
+        setCenterX(getCenterX() + i);
     }
 
     public void moveY(int i) {
         setY(getY() + i);
+        setCenterY(getCenterY() + i);
     }
 
     public boolean isMoveRight() {
@@ -78,5 +85,29 @@ public class Avatar extends HitBox{
 
     public void setMoveDown(boolean moveDown) {
         this.moveDown = moveDown;
+    }
+
+    public boolean isLimitedRightMovement() {
+        return limitedRightMovement;
+    }
+
+    public void setLimitedRightMovement(boolean limitedRightMovement) {
+        this.limitedRightMovement = limitedRightMovement;
+    }
+
+    public boolean isLimitedLeftMovement() {
+        return limitedLeftMovement;
+    }
+
+    public void setLimitedLeftMovement(boolean limitedLeftMovement) {
+        this.limitedLeftMovement = limitedLeftMovement;
+    }
+
+    public int getSpeed() {
+        return speed;
+    }
+
+    public void setSpeed(int speed) {
+        this.speed = speed;
     }
 }

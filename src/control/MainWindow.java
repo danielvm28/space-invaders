@@ -8,11 +8,13 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import screens.BaseScreen;
 import screens.GameScreen;
 import screens.PauseScreen;
+import screens.TransitionScreen;
 
 public class MainWindow implements Initializable {
 	public static int SCREEN = 0;
@@ -23,15 +25,28 @@ public class MainWindow implements Initializable {
 	@FXML
 	private Button pauseBTN;
 
+	@FXML
+	private Label scoreLabel;
+
+	@FXML
+	private Button continueBTN;
+
 	private ArrayList<BaseScreen> screens;
 
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		pauseBTN.setGraphic(new ImageView(new Image("images/pause.png",40, 40, true, true)));
 		screens = new ArrayList<>();
-		screens.add(new GameScreen(canvas));
+		TransitionScreen transitionScreen = new TransitionScreen(canvas);
+		GameScreen gameScreen = new GameScreen(canvas, scoreLabel, transitionScreen, 3);
+
+		screens.add(gameScreen);
 		screens.add(new PauseScreen(canvas));
+		screens.add(transitionScreen);
+
+		transitionScreen.setGameScreen(gameScreen);
 		canvas.setFocusTraversable(true);
+		scoreLabel.setText("0");
 		
 		new Thread(() -> {
 			while (true) {
@@ -44,6 +59,10 @@ public class MainWindow implements Initializable {
 	}
 	
 	private void paint() {
+		if (SCREEN == 2) {
+			continueBTN.setVisible(true);
+			pauseBTN.setVisible(false);
+		}
 		screens.get(SCREEN).paint();
 	}
 
@@ -60,7 +79,7 @@ public class MainWindow implements Initializable {
 
 	private void pause() {
 		try {
-			Thread.sleep(30);
+			Thread.sleep(15);
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
 		}
@@ -83,5 +102,13 @@ public class MainWindow implements Initializable {
 		}
 
 		SCREEN = (SCREEN + 1) % 2;
+	}
+
+	@FXML
+	void continueGame(ActionEvent event) {
+		GameScreen gameScreen = (GameScreen) screens.get(0);
+		gameScreen.resetGame();
+		continueBTN.setVisible(false);
+		pauseBTN.setVisible(true);
 	}
 }
