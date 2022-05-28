@@ -3,6 +3,8 @@ package control;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
+
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -38,7 +40,7 @@ public class MainWindow implements Initializable {
 		pauseBTN.setGraphic(new ImageView(new Image("images/pause.png",40, 40, true, true)));
 		screens = new ArrayList<>();
 		TransitionScreen transitionScreen = new TransitionScreen(canvas);
-		GameScreen gameScreen = new GameScreen(canvas, scoreLabel, transitionScreen, 3);
+		GameScreen gameScreen = new GameScreen(canvas, scoreLabel, transitionScreen, 2);
 
 		screens.add(gameScreen);
 		screens.add(new PauseScreen(canvas));
@@ -79,7 +81,7 @@ public class MainWindow implements Initializable {
 
 	private void pause() {
 		try {
-			Thread.sleep(15);
+			Thread.sleep(14);
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
 		}

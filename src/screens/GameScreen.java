@@ -10,6 +10,8 @@ import javafx.scene.input.KeyEvent;
 import model.Avatar;
 import model.Enemy;
 import model.Bullet;
+import model.ScoreData;
+
 import java.util.ArrayList;
 
 public class GameScreen extends BaseScreen{
@@ -17,9 +19,9 @@ public class GameScreen extends BaseScreen{
 	private int NUM_ENEMIES;
 	private int NUM_ROWS;
 	public int LEVEL;
+	private Image background;
 	private Avatar avatar;
 	private boolean movingRight;
-	private ArrayList<Bullet> bullets;
 	private boolean shooting;
 	private ArrayList<Enemy> enemies;
 	private boolean playing;
@@ -27,7 +29,9 @@ public class GameScreen extends BaseScreen{
 	private int score;
 	private Label scoreLabel;
 	private TransitionScreen transitionScreen;
-	private int speedX;
+	private ArrayList<Bullet> enemyBullets;
+	private double speedX;
+	private ScoreData scoreCoso;
 
 	public GameScreen(Canvas canvas, Label scoreLabel, TransitionScreen transitionScreen, int speedX) {
 		super(canvas);
@@ -37,14 +41,18 @@ public class GameScreen extends BaseScreen{
 		NUM_ENEMIES = 5;
 		NUM_ROWS = 1;
 		LEVEL = 1;
-		bullets = new ArrayList<>();
 		enemies = new ArrayList<>(NUM_ENEMIES);
 		movingRight = true;
 		bulletTimer = 0;
 		playing = true;
 		shooting = false;
+		enemyBullets = new ArrayList<>();
 
-		avatar = new Avatar(canvas, (int) Math.round(canvas.getWidth() / 2) - 30, 580, 60, 100);
+		scoreCoso = new ScoreData();
+		scoreCoso.loadJSON();
+
+		background = new Image("images/pixel_space.png", canvas.getWidth(), canvas.getHeight(), true, true);
+		avatar = new Avatar(canvas, (int) Math.round(canvas.getWidth() / 2) - 30, 800, 60, 100);
 		generateEnemies(speedX);
 		startBulletTimer();
 	}
@@ -57,7 +65,7 @@ public class GameScreen extends BaseScreen{
 				}
 
 				try {
-					Thread.sleep(300);
+					Thread.sleep(400);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
@@ -66,13 +74,29 @@ public class GameScreen extends BaseScreen{
 	}
 
 	public void resetGame() {
-		if ((LEVEL + 1) <= 3) {
-			NUM_ENEMIES += 5;
-			NUM_ROWS++;
+		if (avatar.isAlive()) {
+			if ((LEVEL + 1) <= 3) {
+				NUM_ENEMIES += 5;
+				NUM_ROWS++;
+			} else {
+				speedX+=0.3;
+			}
 		} else {
-			speedX++;
+			scoreCoso.updateScoreboard(score);
+			scoreCoso.saveJSON();
+
+			score = 0;
+			LEVEL = 0;
+			NUM_ENEMIES = 5;
+			NUM_ROWS = 1;
+			speedX = 2;
+			Platform.runLater(() -> scoreLabel.setText(score + ""));
 		}
 
+		avatar = new Avatar(canvas, (int) Math.round(canvas.getWidth() / 2) - 30, 800, 60, 100);
+
+		avatar.resetBullets();
+		enemyBullets.clear();
 		enemies = new ArrayList<>(NUM_ENEMIES);
 		generateEnemies(speedX);
 		MainWindow.SCREEN = 0;
@@ -83,11 +107,10 @@ public class GameScreen extends BaseScreen{
 		playing = true;
 		shooting = false;
 
-		avatar = new Avatar(canvas, (int) Math.round(canvas.getWidth() / 2) - 30, 580, 60, 100);
 		startBulletTimer();
 	}
 
-	public void generateEnemies(int speedX) {
+	public void generateEnemies(double speedX) {
 		int yPos = 40;
 
 		for (int i = 0, n = 0; i < NUM_ROWS; i++) {
@@ -111,39 +134,59 @@ public class GameScreen extends BaseScreen{
 			playing = false;
 			pauseGame();
 			MainWindow.SCREEN = 2;
-			transitionScreen.setLabel("You won");
+			transitionScreen.setWon(true);
+		} else if (!avatar.isAlive()  || (enemies.get(enemies.size() - 1).getY() + enemies.get(enemies.size() - 1).getHeight()) >= avatar.getY()) {
+			avatar.setAlive(false);
+			playing = false;
+			pauseGame();
+			MainWindow.SCREEN = 2;
+			transitionScreen.setWon(false);
+			transitionScreen.setCurrentScore(score + "");
+			transitionScreen.setHighScore(scoreCoso.getHighScore() + "");
 		}
 
-		gc.drawImage(new Image("images/pixel_space.png", canvas.getWidth(), canvas.getHeight(), true, true), 0, 0);
+		gc.drawImage(background, 0, 0);
 
 		avatar.paint();
 
-		for (int i = 0; i < bullets.size(); i++) {
-			bullets.get(i).paint();
+		for (int i = 0; i < avatar.getBullets().size(); i++) {
+			avatar.getBullets().get(i).paint();
 
-			if (bullets.get(i).getY() < 0) {
-				bullets.remove(i);
+			if (avatar.getBullets().get(i).getY() < 0) {
+				avatar.getBullets().remove(i);
 				i--;
 			}
 		}
 
 		for (int i = 0; i < enemies.size(); i++) {
+			if (enemies.get(i).getTimer() == 0) {
+				enemyBullets.add(new Bullet(canvas, enemies.get(i).getX(), enemies.get(i).getY(), 30, 30, enemies.get(i).getWidth()/2, true));
+			}
+
 			enemies.get(i).paint();
+		}
+
+		for (int i = 0; i < enemyBullets.size(); i++) {
+			enemyBullets.get(i).paint();
+
+			if (enemyBullets.get(i).getY() > canvas.getHeight()) {
+				enemyBullets.remove(i);
+				i--;
+			}
 		}
 
 		checkCollisions();
 
 		checkBarriers();
-
 	}
 
 	public void checkCollisions() {
 		// Calculate box distance
 		for (int i = 0; i < enemies.size(); i++) {
-			for (int j = 0; j < bullets.size(); j++) {
+			for (int j = 0; j < avatar.getBullets().size(); j++) {
 				// Compare
 				Enemy b = enemies.get(i);
-				Bullet bullet = bullets.get(j);
+				Bullet bullet = avatar.getBullets().get(j);
 
 				// Calculate radius distance
 				double xDistance = Math.abs(b.getCenterX() - bullet.getCenterX());
@@ -155,13 +198,29 @@ public class GameScreen extends BaseScreen{
 				if (totalDistance <= ((b.getHeight() / 2) + (bullet.getHeight() / 2)) - 10) {
 					enemies.get(i).setAlive(false);
 					enemies.remove(i);
-					bullets.remove(j);
+					avatar.removeBullet(bullet);
 
 					score += 100;
 					Platform.runLater(() -> scoreLabel.setText(score + ""));
 
 					return;
 				}
+			}
+		}
+
+		for (int i = 0; i < enemyBullets.size(); i++) {
+			Bullet enemyBullet = enemyBullets.get(i);
+
+			// Calculate radius distance
+			double xDistance = Math.abs(avatar.getCenterX() - enemyBullet.getCenterX());
+			double yDistance = Math.abs(avatar.getCenterY() - enemyBullet.getCenterY());
+
+			double totalDistance = Math.sqrt(Math.pow(xDistance, 2) + Math.pow(yDistance, 2));
+
+			// Collision happened (Takes into account a 10 pixel tolerance)
+			if (totalDistance <= ((avatar.getHeight() / 2) + (enemyBullet.getHeight() / 2)) - 10) {
+				avatar.setAlive(false);
+				return;
 			}
 		}
 	}
@@ -171,17 +230,19 @@ public class GameScreen extends BaseScreen{
 
 		// Detect if an enemy touched a barrier
 		for (int i = 0; i < enemies.size(); i++) {
-			int center = enemies.get(i).getCenterX();
-			int radius = enemies.get(i).getCenterX() - enemies.get(i).getX();
+			double center = enemies.get(i).getCenterX();
+			double radius = enemies.get(i).getCenterX() - enemies.get(i).getX();
 
 			// Uses movingRight variable to determine the general direction of the enemies.
 			// This helps with avoiding repeated collisions with the limits of the map
 			if (movingRight && center + radius >= canvas.getWidth()) {
 				touchedBarrier = true;
 				movingRight = false;
+				break;
 			} else if (!movingRight && center - radius <= 0) {
 				touchedBarrier = true;
 				movingRight = true;
+				break;
 			}
 		}
 
@@ -193,8 +254,8 @@ public class GameScreen extends BaseScreen{
 		}
 
 		// Detect if the player touched a barrier
-		int avatarRadius = avatar.getCenterX() - avatar.getX();
-		int avatarCenter = avatar.getCenterX();
+		double avatarRadius = avatar.getCenterX() - avatar.getX();
+		double avatarCenter = avatar.getCenterX();
 
 		// Limit the avatar's movements
 		if (avatarCenter + avatarRadius >= canvas.getWidth()) {
@@ -209,18 +270,20 @@ public class GameScreen extends BaseScreen{
 
 	@Override
 	public void onKey(KeyEvent e) {
+		// Uncomment to move up and down
+
 		if (e.getCode().equals(KeyCode.A)){
 			avatar.setMoveLeft(true);
-		} else if (e.getCode().equals(KeyCode.W)){
-			avatar.setMoveUp(true);
-		} else if (e.getCode().equals(KeyCode.S)){
-			avatar.setMoveDown(true);
+//		} else if (e.getCode().equals(KeyCode.W)){
+//			avatar.setMoveUp(true);
+//		} else if (e.getCode().equals(KeyCode.S)){
+//			avatar.setMoveDown(true);
 		} else if (e.getCode().equals(KeyCode.D)){
 			avatar.setMoveRight(true);
 		} else if(e.getCode().equals(KeyCode.SPACE)) {
 			// Limits the capacity of shooting
 			if (bulletTimer == 0 && !shooting) {
-				bullets.add(new Bullet(canvas, avatar.getX(), avatar.getY(), 30, 30, avatar.getWidth()/2));
+				avatar.addBullet(new Bullet(canvas, avatar.getX(), avatar.getY(), 30, 30, avatar.getWidth()/2, false));
 				bulletTimer++;
 				shooting = true;
 			}
@@ -233,12 +296,14 @@ public class GameScreen extends BaseScreen{
 
 	@Override
 	public void keyReleased(KeyEvent e) {
+		// Uncomment to move up and down
+
 		if (e.getCode().equals(KeyCode.A)){
 			avatar.setMoveLeft(false);
-		} else if (e.getCode().equals(KeyCode.W)){
-			avatar.setMoveUp(false);
-		} else if (e.getCode().equals(KeyCode.S)){
-			avatar.setMoveDown(false);
+//		} else if (e.getCode().equals(KeyCode.W)){
+//			avatar.setMoveUp(false);
+//		} else if (e.getCode().equals(KeyCode.S)){
+//			avatar.setMoveDown(false);
 		} else if (e.getCode().equals(KeyCode.D)){
 			avatar.setMoveRight(false);
 		} else if (e.getCode().equals(KeyCode.RIGHT)) {

@@ -2,28 +2,23 @@ package model;
 
 import com.google.gson.Gson;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Collections;
 
 public class ScoreData {
-    private ArrayList<Integer> scores;
-
-    public ScoreData() {
-        scores = new ArrayList<>();
-    }
+    private int highScore;
 
     public void updateScoreboard(int newScore) {
-        scores.add(newScore);
-        Collections.sort(scores);
+        if (newScore > highScore) {
+            highScore = newScore;
+        }
         saveJSON();
     }
 
-    public ArrayList<Integer> getScores() {
-        return scores;
+    public int getHighScore() {
+        return highScore;
     }
 
-    public void setScores(ArrayList<Integer> scores) {
-        this.scores = scores;
+    public void setHighScore(int highScore) {
+        this.highScore = highScore;
     }
 
     public void saveJSON() {
@@ -56,7 +51,7 @@ public class ScoreData {
             ScoreData data = gson.fromJson(json, ScoreData.class);
 
             if (data != null) {
-                scores = data.scores;
+                highScore = data.highScore;
             }
         } catch (IOException e) {
             e.printStackTrace();

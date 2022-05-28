@@ -2,7 +2,8 @@ package model;
 
 import javafx.scene.canvas.Canvas;
 import javafx.scene.image.Image;
-import javafx.scene.paint.Color;
+
+import java.util.ArrayList;
 
 public class Avatar extends HitBox{
     private Image image;
@@ -13,46 +14,21 @@ public class Avatar extends HitBox{
     private boolean limitedRightMovement;
     private boolean limitedLeftMovement;
     private int speed;
+    private ArrayList<Bullet> bullets;
+    private boolean alive;
 
     public Avatar(Canvas canvas, int x, int y, int width, int height) {
         super(canvas, x, y, width, height);
+        bullets = new ArrayList<>();
         moveRight = false;
         moveLeft = false;
         moveUp = false;
         moveDown = false;
         limitedLeftMovement = false;
         limitedRightMovement = false;
-        speed = 5;
+        alive = true;
+        speed = 2;
         image = new Image("images/space_ship.png", width, height, true, true);
-    }
-
-    /**
-     * Paints the avatar depending on movement booleans
-     */
-    public void paint(){
-        if (moveDown && !moveUp) {
-            moveY(speed);
-        } else if(!moveDown && moveUp){
-            moveY(-speed);
-        }
-
-        if (moveRight && !moveLeft && !limitedRightMovement) {
-            moveX(speed);
-        } else if(!moveRight && moveLeft && !limitedLeftMovement){
-            moveX(-speed);
-        }
-
-        getGc().drawImage(image, getX(), getY());
-    }
-
-    public void moveX(int i) {
-        setX(getX() + i);
-        setCenterX(getCenterX() + i);
-    }
-
-    public void moveY(int i) {
-        setY(getY() + i);
-        setCenterY(getCenterY() + i);
     }
 
     public boolean isMoveRight() {
@@ -109,5 +85,62 @@ public class Avatar extends HitBox{
 
     public void setSpeed(int speed) {
         this.speed = speed;
+    }
+
+    public ArrayList<Bullet> getBullets() {
+        return bullets;
+    }
+
+    public void setBullets(ArrayList<Bullet> bullets) {
+        this.bullets = bullets;
+    }
+
+    public boolean isAlive() {
+        return alive;
+    }
+
+    public void setAlive(boolean alive) {
+        this.alive = alive;
+    }
+
+    /**
+     * Paints the avatar depending on movement booleans
+     */
+    public void paint(){
+        if (moveDown && !moveUp) {
+            moveY(speed);
+        } else if(!moveDown && moveUp){
+            moveY(-speed);
+        }
+
+        if (moveRight && !moveLeft && !limitedRightMovement) {
+            moveX(speed);
+        } else if(!moveRight && moveLeft && !limitedLeftMovement){
+            moveX(-speed);
+        }
+
+        getGc().drawImage(image, getX(), getY());
+    }
+
+    public void moveX(int i) {
+        setX(getX() + i);
+        setCenterX(getCenterX() + i);
+    }
+
+    public void moveY(int i) {
+        setY(getY() + i);
+        setCenterY(getCenterY() + i);
+    }
+
+    public void addBullet(Bullet bullet) {
+        bullets.add(bullet);
+    }
+
+    public void removeBullet(Bullet bullet) {
+        bullets.remove(bullet);
+    }
+
+    public void resetBullets() {
+        bullets.clear();
     }
 }
