@@ -31,7 +31,7 @@ public class GameScreen extends BaseScreen{
 	private TransitionScreen transitionScreen;
 	private ArrayList<Bullet> enemyBullets;
 	private double speedX;
-	private ScoreData scoreCoso;
+	private ScoreData scoreData;
 
 	public GameScreen(Canvas canvas, Label scoreLabel, TransitionScreen transitionScreen, int speedX) {
 		super(canvas);
@@ -48,8 +48,8 @@ public class GameScreen extends BaseScreen{
 		shooting = false;
 		enemyBullets = new ArrayList<>();
 
-		scoreCoso = new ScoreData();
-		scoreCoso.loadJSON();
+		scoreData = new ScoreData();
+		scoreData.loadJSON();
 
 		background = new Image("images/pixel_space.png", canvas.getWidth(), canvas.getHeight(), true, true);
 		avatar = new Avatar(canvas, (int) Math.round(canvas.getWidth() / 2) - 30, 800, 60, 100);
@@ -82,8 +82,8 @@ public class GameScreen extends BaseScreen{
 				speedX+=0.3;
 			}
 		} else {
-			scoreCoso.updateScoreboard(score);
-			scoreCoso.saveJSON();
+			scoreData.updateScoreboard(score);
+			scoreData.saveJSON();
 
 			score = 0;
 			LEVEL = 0;
@@ -142,7 +142,7 @@ public class GameScreen extends BaseScreen{
 			MainWindow.SCREEN = 2;
 			transitionScreen.setWon(false);
 			transitionScreen.setCurrentScore(score + "");
-			transitionScreen.setHighScore(scoreCoso.getHighScore() + "");
+			transitionScreen.setHighScore(scoreData.getHighScore() + "");
 		}
 
 		gc.drawImage(background, 0, 0);
