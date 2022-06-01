@@ -82,9 +82,6 @@ public class GameScreen extends BaseScreen{
 				speedX+=0.3;
 			}
 		} else {
-			scoreData.updateScoreboard(score);
-			scoreData.saveJSON();
-
 			score = 0;
 			LEVEL = 0;
 			NUM_ENEMIES = 5;
@@ -143,6 +140,10 @@ public class GameScreen extends BaseScreen{
 			transitionScreen.setWon(false);
 			transitionScreen.setCurrentScore(score + "");
 			transitionScreen.setHighScore(scoreData.getHighScore() + "");
+
+			// Update scoreboard
+			scoreData.updateScoreboard(score);
+			scoreData.saveJSON();
 		}
 
 		gc.drawImage(background, 0, 0);
@@ -270,14 +271,8 @@ public class GameScreen extends BaseScreen{
 
 	@Override
 	public void onKey(KeyEvent e) {
-		// Uncomment to move up and down
-
 		if (e.getCode().equals(KeyCode.A)){
 			avatar.setMoveLeft(true);
-//		} else if (e.getCode().equals(KeyCode.W)){
-//			avatar.setMoveUp(true);
-//		} else if (e.getCode().equals(KeyCode.S)){
-//			avatar.setMoveDown(true);
 		} else if (e.getCode().equals(KeyCode.D)){
 			avatar.setMoveRight(true);
 		} else if(e.getCode().equals(KeyCode.SPACE)) {
@@ -296,14 +291,8 @@ public class GameScreen extends BaseScreen{
 
 	@Override
 	public void keyReleased(KeyEvent e) {
-		// Uncomment to move up and down
-
 		if (e.getCode().equals(KeyCode.A)){
 			avatar.setMoveLeft(false);
-//		} else if (e.getCode().equals(KeyCode.W)){
-//			avatar.setMoveUp(false);
-//		} else if (e.getCode().equals(KeyCode.S)){
-//			avatar.setMoveDown(false);
 		} else if (e.getCode().equals(KeyCode.D)){
 			avatar.setMoveRight(false);
 		} else if (e.getCode().equals(KeyCode.RIGHT)) {
